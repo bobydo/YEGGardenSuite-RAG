@@ -13,6 +13,25 @@ from config import EMBED_MODEL, INDEX_DIR
 
 ALLOWED = {"zoningbylaw.edmonton.ca", "www.edmonton.ca"}
 
+def load_pdf_urls(pdf_urls):
+    docs = []
+    for url in (pdf_urls or []):
+        try:
+            docs.extend(OnlinePDFLoader(url).load())
+        except Exception as e:
+            print(f"[warn] PDF load failed: {url} -> {e}")
+    return docs
+
+def load_local_pdfs(paths):
+    docs = []
+    for p in (paths or []):
+        try:
+            docs.extend(PyPDFLoader(p).load())
+        except Exception as e:
+            print(f"[warn] Local PDF load failed: {p} -> {e}")
+    return docs
+
+
 def _is_allowed(url):
     try:
         host = url.split("//", 1)[-1].split("/", 1)[0].lower()
