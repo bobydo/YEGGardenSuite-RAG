@@ -1,11 +1,10 @@
-from langchain_community.llms import Ollama
+from langchain_ollama import OllamaLLM
 from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
-from config import GEN_MODEL, SYSTEM_RULES, QA_TEMPLATE
+from config import GEN_MODEL, SYSTEM_RULES, QA_TEMPLATE, LLM_KWARGS
 
 def make_llm():
-    # Low temperature for factual answers
-    return Ollama(model=GEN_MODEL, temperature=0.2)
+    return OllamaLLM(model=GEN_MODEL, **LLM_KWARGS)
 
 def make_prompt():
     return PromptTemplate(

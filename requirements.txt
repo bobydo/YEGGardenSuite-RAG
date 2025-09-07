@@ -1,5 +1,13 @@
+playwright
+duckduckgo_search
 langchain>=0.2.0
 langchain-community>=0.2.0
 faiss-cpu>=1.7.4
 tiktoken>=0.7.0
 beautifulsoup4>=4.12.2
+numpy>=2.0.0,<3.0.0
+regex>=2024.4.28,<2025.0.0
+typing-extensions==4.13.2
+urllib3==2.4.0
+langchain-ollama
+pypdf>=4.2.0

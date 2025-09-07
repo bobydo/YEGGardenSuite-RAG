@@ -22,16 +22,16 @@ if __name__ == "__main__":
     # Example questions
     questions = [
         "What is backyard housing and do I need permits?",
-        "What are the height and width limits for backyard housing?",
+        "What are the height and area limits for backyard housing?",
         "Do I need an alley to build a backyard house?",
     ]
 
-    print("=== PRE-INGEST (RAG) ===")
+    """print("=== PRE-INGEST (RAG) ===")
     qa = make_qa(vs)
     for q in questions:
         ans, srcs = answer_pre_ingest(q, qa)
         print(f"\nQ: {q}\nA: {ans}")
-        show_sources(srcs)
+        show_sources(srcs)"""
 
     print("\n=== HYBRID (RAG + live refresh fallback) ===")
     for q in questions:
