@@ -55,3 +55,10 @@ Local, privacy-first Q&A over City of Edmonton backyard-housing pages using:
 2025-09-07 09:23:08,670 INFO elapsed_s: 3176.661
 2025-09-07 09:23:08,670 INFO === refresh end ===
 ```
+- seach_first.py tuning process 
+```
+a) You don’t need to “know all terms” first. Start with a small glossary and intent paraphrases → auto-generate many queries.
+b) The mining step (--mine) scrapes the top results and surfaces phrases like “abutting lane”, “Pathway (0.9 m)”, “Vehicle Access”. Add any good ones back to GLOSSARY and re-run.
+c) Keep the allowlist so results stay authoritative.
+python jobs\search_first.py -k 25 --mine
+```

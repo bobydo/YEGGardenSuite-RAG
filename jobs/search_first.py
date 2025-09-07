@@ -144,6 +144,16 @@ def is_pdf (url):
     return is_pdf
 
 def main():
+    # Clean data/raw folder before downloading PDFs
+    raw_dir = os.path.join('data', 'raw')
+    if os.path.exists(raw_dir):
+        for f in os.listdir(raw_dir):
+            fp = os.path.join(raw_dir, f)
+            if os.path.isfile(fp):
+                try:
+                    os.remove(fp)
+                except Exception as e:
+                    print(f"[warn] Could not remove {fp}: {e}")
     ap = argparse.ArgumentParser()
     ap.add_argument("-k", type=int, default=25, help="max results per query (default: 25)")
     ap.add_argument("--mine", action="store_true", help="mine new terms from top pages")
