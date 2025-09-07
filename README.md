@@ -27,17 +27,31 @@ Local, privacy-first Q&A over City of Edmonton backyard-housing pages using:
 3) Run:
    ```bash
    python main.py
+   Ask one question:
+   python main.py -q "What are the height and area limits for backyard housing?"
+   Interactive chat:
+   python main.py -i
+   Pick mode explicitly:
+   python main.py --mode rag      # pre-ingest only
+   python main.py --mode hybrid   # RAG + live refresh
    ```
-
-## Files
-- `config.py` — models, URLs, system rules, prompt template.
-- `rag_store.py` — load/split pages, build/load FAISS, refresh store.
-- `qa_chain.py` — create LLM and RetrievalQA with custom prompt.
-- `answer_modes.py` — `answer_pre_ingest` and `answer_hybrid` helpers.
-- `main.py` — demo runner showing both modes.
+4) Jobs
+   ```bash
+   python jobs/search_first.py # get urls
+   python jobs/refresh.py # rebuild index from scratch, write logs to custom path
+   ```
 
 ## Notes
 - Add or adjust URLs in `config.py` to include more official City pages.
 - Hybrid mode refreshes the store if the model replies `NOT_ENOUGH_CONTEXT`.
 - For production, schedule periodic refreshes and add robust citations/logging.
 - Integrations providers https://python.langchain.com/docs/integrations/providers/
+- refresh.py took long 53 mins to complete index
+```
+2025-09-07 08:30:12,039 INFO index size (before): 112
+2025-09-07 08:30:34,663 INFO fetched docs: web=7 pdf_web=0 pdf_local=34 total=41
+2025-09-07 08:30:34,664 INFO chunk_count (pre-split estimate): 1469
+2025-09-07 09:23:08,670 INFO index size (after): 1581
+2025-09-07 09:23:08,670 INFO elapsed_s: 3176.661
+2025-09-07 09:23:08,670 INFO === refresh end ===
+```
