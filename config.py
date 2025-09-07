@@ -16,6 +16,9 @@ URLS = [
     "https://zoningbylaw.edmonton.ca/bylaw-pdf-print",
     "https://zoningbylaw.edmonton.ca/part-6-specific-development-regulations",
     "https://zoningbylaw.edmonton.ca/part-6-specific-development-regulations/610-backyard-housing",
+    "https://zoningbylaw.edmonton.ca/part-5-general-development-regulations/580-parking-access-site-circulation-and-bike-parking",
+    "https://zoningbylaw.edmonton.ca/part-2-standard-zones-and-overlays/residential-zones/210-rs-small-scale-residential-zone",
+    "https://zoningbylaw.edmonton.ca/pathway",
 ]
 
 # Optional: online PDF sources (processed with OnlinePDFLoader)
@@ -34,7 +37,9 @@ SYSTEM_RULES = (
     "You are an assistant for Edmonton backyard housing. "
     "Answer ONLY from the provided context (official City sources). "
     "If the answer is not in the context, reply exactly with: NOT_ENOUGH_CONTEXT. "
-    "Be concise and non-legal."
+    "Be concise and non-legal. "
+    "Silently fix spelling/grammar in user questions and in your answers; "
+    "do not echo misspelled words. Keep intentional names as written."
 )
 
 # Prompt template for RetrievalQA
