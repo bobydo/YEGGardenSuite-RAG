@@ -177,20 +177,18 @@ def main():
         try:
             path = urlparse(u).path.lower()
             if is_pdf(path):
-                pdf_url_print_format = f"\"{u}\","
-                print(pdf_url_print_format)
-                pdf_urls.append(pdf_url_print_format)
+                print(f'"{u}",')
+                pdf_urls.append(u)
             else:
-                other_urls_print_format = f"\"{u}\","
-                print(other_urls_print_format)
-                other_urls.append(other_urls_print_format)
+                print(f'"{u}",')
+                other_urls.append(u)
         except Exception:
             other_urls.append(u)
 
     # Print grouped output
     print(f"PDF urls ({len(pdf_urls)}):")
     for u in pdf_urls:
-        print(u)
+        print(f'"{u}",')
         saved = download_pdf(u)
         if saved:
             print("Saved to:", saved)
@@ -199,7 +197,7 @@ def main():
 
     print(f"\nOther urls ({len(other_urls)}):")
     for u in other_urls:
-        print(u)
+        print(f'"{u}",')
 
     # Save artifacts
     with open("logs/search_first_results.json", "w", encoding="utf-8") as f:

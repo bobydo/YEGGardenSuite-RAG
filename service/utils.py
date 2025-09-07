@@ -46,9 +46,8 @@ def download_pdf(url: str, out_dir: str = None, filename: str | None = None, tim
 
     Returns: absolute file path as string
     """
-    from config import DATA_RAW_DIR
     if out_dir is None:
-        out_dir = str(DATA_RAW_DIR)
+        out_dir = "data/raw"
     Path(out_dir).mkdir(parents=True, exist_ok=True)
 
     try:
