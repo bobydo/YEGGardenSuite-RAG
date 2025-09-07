@@ -7,15 +7,21 @@
 # Usage:
 #   python search_first.py -k 25 --mine
 #
+
 # Deps:
 #   pip install duckduckgo-search beautifulsoup4 requests
-import argparse, json, os, re, time
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import argparse, json, re, time
 from urllib.parse import urlparse
 import requests
 from ddgs import DDGS
 from bs4 import BeautifulSoup
+from service.utils import download_pdf
 
 ALLOWED = {"zoningbylaw.edmonton.ca", "www.edmonton.ca"}
+
+PDF_URL_RE = re.compile(r'\.pdf(?:$|[?#/])', re.I)
 
 # Always include this URL in results (per request)
 ALWAYS_INCLUDE = "https://www.edmonton.ca/programs_services/housing/affordable-housing-developments"
@@ -185,6 +191,11 @@ def main():
     print(f"PDF urls ({len(pdf_urls)}):")
     for u in pdf_urls:
         print(u)
+        saved = download_pdf(u)
+        if saved:
+            print("Saved to:", saved)
+        else:
+            print(f"[error] PDF not saved for: {u}")
 
     print(f"\nOther urls ({len(other_urls)}):")
     for u in other_urls:
