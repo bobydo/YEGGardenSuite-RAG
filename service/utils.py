@@ -36,7 +36,7 @@ def attach_citations(answer: str, source_documents) -> str:
         return answer
     return f"{answer}\n\n{tail}"
 
-def download_pdf(url: str, out_dir: str = None, filename: str | None = None, timeout: int = 30) -> str:
+def download_pdf(url: str, out_dir: str | None = None, filename: str | None = None, timeout: int = 30) -> str | None:
     r"""
     Download a PDF to data\raw\ (Windows-friendly).
     - Auto-creates the folder
@@ -44,7 +44,7 @@ def download_pdf(url: str, out_dir: str = None, filename: str | None = None, tim
     - Warns if response doesn't look like a PDF
     - De-duplicates by appending _1, _2, ...
 
-    Returns: absolute file path as string
+    Returns: absolute file path as string or None if failed
     """
     if out_dir is None:
         out_dir = "data/raw"

@@ -1,17 +1,15 @@
 from langchain_ollama import OllamaLLM
-from langchain.prompts import PromptTemplate
+from langchain.prompts import ChatPromptTemplate
 from langchain.chains import RetrievalQA
-from config import GEN_MODEL, SYSTEM_RULES, QA_TEMPLATE, LLM_KWARGS
+from config import GEN_MODEL, LLM_KWARGS
+from service.prompts import CHAT_PROMPT
 
 def make_llm():
     return OllamaLLM(model=GEN_MODEL, **LLM_KWARGS)
 
 def make_prompt():
-    return PromptTemplate(
-        template=QA_TEMPLATE,
-        input_variables=["question", "context"],
-        partial_variables={"system": SYSTEM_RULES},
-    )
+    # CHAT_PROMPT already includes system + human message templates
+    return CHAT_PROMPT
 
 def make_qa(vs):
     retriever = vs.as_retriever(search_kwargs={"k": 4})

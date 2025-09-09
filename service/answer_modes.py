@@ -12,7 +12,34 @@ _qn_llm = ChatOllama(model=GEN_MODEL, temperature=0)
 
 def normalize_question(q: str) -> str:
     try:
-        return _qn_llm.invoke(_QN_PROMPT.format(q=q)).content.strip()
+        result = _qn_llm.invoke(_QN_PROMPT.format(q=q))
+        # If result is a list, get the first string or dict's 'content'
+        if isinstance(result, list):
+            if result and isinstance(result[0], dict) and "content" in result[0]:
+                return result[0]["content"].strip()
+            elif result and isinstance(result[0], str):
+                return result[0].strip()
+            else:
+                return str(result).strip()
+        elif hasattr(result, "content"):
+            content = result.content
+            if isinstance(content, str):
+                return content.strip()
+            elif isinstance(content, list):
+                # If it's a list, join string elements or extract 'content' from dicts
+                items = []
+                for item in content:
+                    if isinstance(item, str):
+                        items.append(item.strip())
+                    elif isinstance(item, dict) and "content" in item:
+                        items.append(str(item["content"]).strip())
+                return " ".join(items)
+            else:
+                return str(content).strip()
+        elif isinstance(result, str):
+            return result.strip()
+        else:
+            return str(result).strip()
     except Exception:
         return q  # safest fallback
 

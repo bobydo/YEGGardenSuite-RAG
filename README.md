@@ -40,6 +40,11 @@ Local, privacy-first Q&A over City of Edmonton backyard-housing pages using:
    python jobs/search_first.py # get urls
    python jobs/refresh.py # rebuild index from scratch, write logs to custom path
    ```
+5) Static type checker for Python
+```bash
+   (.venv) PS D:\YEGGardenSuite-RAG> npx pyright
+   0 errors, 0 warnings, 0 informations
+```
 
 ## Notes
 - Add or adjust URLs in `config.py` to include more official City pages.
@@ -62,3 +67,4 @@ b) The mining step (--mine) scrapes the top results and surfaces phrases like â€
 c) Keep the allowlist so results stay authoritative.
 python jobs\search_first.py -k 25 --mine
 ```
+- Optional (future try): LCEL chains available in `service/lcel_qa_chain.py` (more control, streaming, custom context formatting).

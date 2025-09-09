@@ -144,16 +144,6 @@ def is_pdf (url):
     return is_pdf
 
 def main():
-    # Clean data/raw folder before downloading PDFs
-    raw_dir = os.path.join('data', 'raw')
-    if os.path.exists(raw_dir):
-        for f in os.listdir(raw_dir):
-            fp = os.path.join(raw_dir, f)
-            if os.path.isfile(fp):
-                try:
-                    os.remove(fp)
-                except Exception as e:
-                    print(f"[warn] Could not remove {fp}: {e}")
     ap = argparse.ArgumentParser()
     ap.add_argument("-k", type=int, default=25, help="max results per query (default: 25)")
     ap.add_argument("--mine", action="store_true", help="mine new terms from top pages")
@@ -187,18 +177,20 @@ def main():
         try:
             path = urlparse(u).path.lower()
             if is_pdf(path):
-                print(f'"{u}",')
-                pdf_urls.append(u)
+                pdf_url_print_format = f"\"{u}\","
+                print(pdf_url_print_format)
+                pdf_urls.append(pdf_url_print_format)
             else:
-                print(f'"{u}",')
-                other_urls.append(u)
+                other_urls_print_format = f"\"{u}\","
+                print(other_urls_print_format)
+                other_urls.append(other_urls_print_format)
         except Exception:
             other_urls.append(u)
 
     # Print grouped output
     print(f"PDF urls ({len(pdf_urls)}):")
     for u in pdf_urls:
-        print(f'"{u}",')
+        print(u)
         saved = download_pdf(u)
         if saved:
             print("Saved to:", saved)
@@ -207,7 +199,7 @@ def main():
 
     print(f"\nOther urls ({len(other_urls)}):")
     for u in other_urls:
-        print(f'"{u}",')
+        print(u)
 
     # Save artifacts
     with open("logs/search_first_results.json", "w", encoding="utf-8") as f:

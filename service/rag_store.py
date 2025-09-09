@@ -6,12 +6,10 @@ from urllib.parse import urlparse
 from langchain_community.document_loaders import WebBaseLoader, OnlinePDFLoader, PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import OllamaEmbeddings
+from langchain_community.embeddings import OllamaEmbeddings, SentenceTransformerEmbeddings
 from langchain.schema import Document
 from playwright.sync_api import sync_playwright   # NEW
-from config import EMBED_MODEL, INDEX_DIR
-
-ALLOWED = {"zoningbylaw.edmonton.ca", "www.edmonton.ca"}
+from config import EMBED_MODEL, INDEX_DIR, ALLOWED
 
 def load_pdf_urls(pdf_urls):
     docs = []
@@ -138,6 +136,35 @@ def load_pages(urls):
 def split_docs(docs):
     splitter = RecursiveCharacterTextSplitter(chunk_size=1200, chunk_overlap=150)
     return splitter.split_documents(docs)
+
+def build_index(
+    pdf_paths: Sequence[str],
+    *,
+    chunk_size: int = 800,
+    chunk_overlap: int = 120,
+    model_name: str = "all-MiniLM-L6-v2",
+    mmr_k: int = 4,
+):
+    """Lightweight helper: load local PDFs -> chunk -> embed (SentenceTransformer) -> FAISS retriever.
+
+    Returns a retriever configured for MMR search. Does NOT touch the persistent Ollama-based index
+    used elsewhere (build_or_load_store). This is an optional faster path for experimentation.
+    """
+    docs = []
+    for p in pdf_paths or []:
+        try:
+            docs.extend(PyPDFLoader(p).load())
+        except Exception as e:
+            print(f"[warn] PDF load failed (build_index): {p} -> {e}")
+
+    if not docs:
+        raise ValueError("No PDF documents loaded — check paths")
+
+    splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    chunks = splitter.split_documents(docs)
+    embed = SentenceTransformerEmbeddings(model_name=model_name)
+    vs = FAISS.from_documents(chunks, embed)
+    return vs.as_retriever(search_type="mmr", search_kwargs={"k": mmr_k})
 
 def build_or_load_store(urls: List[str], pdf_urls: Sequence[str] = (), local_pdf_paths: Sequence[str] = ()):
     embeddings = OllamaEmbeddings(model=EMBED_MODEL)

@@ -11,6 +11,9 @@ EMBED_MODEL = "nomic-embed-text"   # Embedding model via Ollama
 # Local FAISS index directory
 INDEX_DIR = Path("./edmonton_backyard_faiss")
 
+# Allowed hostnames for scraping / loading
+ALLOWED = {"zoningbylaw.edmonton.ca", "www.edmonton.ca"}
+
 # Source pages (add more official City of Edmonton pages if needed)
 URLS = [
     "https://www.edmonton.ca/",
@@ -107,17 +110,6 @@ SYSTEM_RULES = (
     "Silently fix spelling/grammar in user questions and in your answers; "
     "do not echo misspelled words. Keep intentional names as written."
 )
-
-# Prompt template for RetrievalQA
-QA_TEMPLATE = """{system}
-
-Question: {question}
-
-Context:
-{context}
-
-Answer:
-"""
 
 # ---------- Ollama generation parameters (tunable) ----------
 # These map to Ollama's /generate options.
