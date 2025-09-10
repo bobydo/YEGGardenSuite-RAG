@@ -18,6 +18,7 @@ import requests
 from ddgs import DDGS
 from bs4 import BeautifulSoup
 from service.utils import download_pdf
+from config import LOGS_DIR
 
 ALLOWED = {"zoningbylaw.edmonton.ca", "www.edmonton.ca"}
 
@@ -202,7 +203,7 @@ def main():
         print(u)
 
     # Save artifacts
-    with open("logs/search_first_results.json", "w", encoding="utf-8") as f:
+    with open(LOGS_DIR / "search_first_results.json", "w", encoding="utf-8") as f:
         json.dump({
             "queries": queries,
             "unique_urls": sorted(all_urls),

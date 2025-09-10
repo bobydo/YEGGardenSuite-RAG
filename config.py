@@ -4,9 +4,15 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 DATA_RAW_DIR = PROJECT_ROOT / "data" / "raw"
 DATA_RAW_DIR.mkdir(parents=True, exist_ok=True)
 
+# Logs directory
+LOGS_DIR = PROJECT_ROOT / "logs"
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
+
 # Ollama model names
 GEN_MODEL = "llama3.1:8b"          # Meta Llama via Ollama (chat model)
 EMBED_MODEL = "nomic-embed-text"   # Embedding model via Ollama
+
+
 
 # Local FAISS index directory
 INDEX_DIR = Path("./edmonton_backyard_faiss")
