@@ -2,7 +2,7 @@
 Central logging setup for the app.
 
 Usage:
-    from service.log import configure_logging
+    from service.logging_helper import configure_logging
     configure_logging()  # logs/<scriptname>.log + console
 
 You can also override the script name:

@@ -13,6 +13,7 @@ from langchain_community.embeddings import SentenceTransformerEmbeddings
 from langchain.schema import Document
 from playwright.sync_api import sync_playwright   # NEW
 from config import EMBED_MODEL, INDEX_DIR, ALLOWED
+from service.utils import is_allowed_websites
 
 logger = logging.getLogger(__name__)
 
@@ -35,12 +36,7 @@ def load_local_pdfs(paths):
     return docs
 
 
-def _is_allowed(url):
-    try:
-        host = url.split("//", 1)[-1].split("/", 1)[0].lower()
-        return host in ALLOWED
-    except Exception:
-        return False
+ 
 
 def _load_html_basic(urls):
     try:
@@ -78,7 +74,7 @@ def _expand_and_extract_with_playwright(urls):
 
         page = ctx.new_page()
         for url in (urls or []):
-            if not _is_allowed(url):
+            if not is_allowed_websites(url):
                 skipped += 1
                 logger.debug("playwright: skip disallowed: %s", url)
                 continue
@@ -122,7 +118,7 @@ def _expand_and_extract_with_playwright(urls):
                     try:
                         link = page.get_by_role("link", name="Create PDF", exact=False).first
                         href = link.get_attribute("href")
-                        if href and href.startswith("http") and _is_allowed(href):
+                        if href and href.startswith("http") and is_allowed_websites(href):
                             pdf_docs = OnlinePDFLoader(href).load()
                             docs.extend(pdf_docs)
                             logger.info(

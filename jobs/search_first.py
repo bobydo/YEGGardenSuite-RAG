@@ -11,16 +11,16 @@
 # Deps:
 #   pip install duckduckgo-search beautifulsoup4 requests
 import sys, os
+import logging
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import argparse, json, re, time
 from urllib.parse import urlparse
 import requests
 from ddgs import DDGS
 from bs4 import BeautifulSoup
-from service.utils import download_pdf
-from config import LOGS_DIR
-
-ALLOWED = {"zoningbylaw.edmonton.ca", "www.edmonton.ca"}
+from service.utils import download_pdf, is_allowed_websites
+from config import LOGS_DIR, ALLOWED
+from service.logging_helper import configure_logging
 
 PDF_URL_RE = re.compile(r'\.pdf(?:$|[?#/])', re.I)
 
@@ -65,7 +65,10 @@ SITE_TEMPLATES = [
 ]
 
 def allowlist(urls):
-    return [u for u in urls if urlparse(u).netloc in ALLOWED]
+    # Respect config semantics: if ALLOWED is empty, allow all
+    if not ALLOWED:
+        return urls
+    return [u for u in urls if is_allowed_websites(u)]
 
 def ddg(q, k=20):
     for _ in range(2):
@@ -145,6 +148,9 @@ def is_pdf (url):
     return is_pdf
 
 def main():
+    # Configure logging to logs/search_first.log + console
+    logger = configure_logging(level=logging.INFO)
+
     ap = argparse.ArgumentParser()
     ap.add_argument("-k", type=int, default=25, help="max results per query (default: 25)")
     ap.add_argument("--mine", action="store_true", help="mine new terms from top pages")
@@ -178,32 +184,41 @@ def main():
         try:
             path = urlparse(u).path.lower()
             if is_pdf(path):
-                pdf_url_print_format = f"\"{u}\","
-                print(pdf_url_print_format)
-                pdf_urls.append(pdf_url_print_format)
+                # Print nicely formatted, but store raw URL
+                print(f'"{u}",')
+                logger.info('"%s",', u)
+                pdf_urls.append(u)
             else:
-                other_urls_print_format = f"\"{u}\","
-                print(other_urls_print_format)
-                other_urls.append(other_urls_print_format)
+                print(f'"{u}",')
+                logger.info('"%s",', u)
+                other_urls.append(u)
         except Exception:
             other_urls.append(u)
 
     # Print grouped output
     print(f"PDF urls ({len(pdf_urls)}):")
+    logger.info("PDF urls (%d):", len(pdf_urls))
     for u in pdf_urls:
-        print(u)
+        # Re-print grouped section nicely, but download using raw URL
+        print(f'"{u}",')
+        logger.info('"%s",', u)
         saved = download_pdf(u)
         if saved:
             print("Saved to:", saved)
+            logger.info("Saved to: %s", saved)
         else:
             print(f"[error] PDF not saved for: {u}")
+            logger.error("PDF not saved for: %s", u)
 
     print(f"\nOther urls ({len(other_urls)}):")
+    logger.info("Other urls (%d):", len(other_urls))
     for u in other_urls:
-        print(u)
+        print(f'"{u}",')
+        logger.info('"%s",', u)
 
     # Save artifacts
-    with open(LOGS_DIR / "search_first_results.json", "w", encoding="utf-8") as f:
+    out_path = LOGS_DIR / "search_first_results.json"
+    with open(out_path, "w", encoding="utf-8") as f:
         json.dump({
             "queries": queries,
             "unique_urls": sorted(all_urls),
@@ -211,6 +226,7 @@ def main():
             "other_urls": other_urls,
             "mined_terms": mined if args.mine else {},
         }, f, indent=2, ensure_ascii=False)
+    logger.info("Saved results to %s", out_path)
 
 if __name__ == "__main__":
     main()

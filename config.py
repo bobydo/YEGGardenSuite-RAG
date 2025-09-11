@@ -17,8 +17,9 @@ EMBED_MODEL = "nomic-embed-text"   # Embedding model via Ollama
 # Local FAISS index directory
 INDEX_DIR = Path("./edmonton_backyard_faiss")
 
-# Allowed hostnames for scraping / loading
-ALLOWED = {"zoningbylaw.edmonton.ca", "www.edmonton.ca"}
+# Allowed hostnames for scraping / loading (set to empty {} to allow all)
+# ALLOWED = {"zoningbylaw.edmonton.ca", "www.edmonton.ca"}
+ALLOWED = {}
 
 # Source pages (add more official City of Edmonton pages if needed)
 URLS = [
@@ -74,6 +75,10 @@ URLS = [
     "https://zoningbylaw.edmonton.ca/part-8-definitions/820-general-definitions",
     "https://zoningbylaw.edmonton.ca/setback",
     "https://zoningbylaw.edmonton.ca/street",
+    "https://timberhaus.ca/blog/average-cost-to-build-a-house-in-edmonton/?utm_source=chatgpt.com",
+    "https://www.coohom.com/article/cost-per-square-foot-to-build-a-house-in-edmonton?utm_source=chatgpt.com",
+    "https://newhomesalberta.ca/new-home-construction-costs-alberta-build-your-dream-home/?utm_source=chatgpt.com",
+    "https://christina-reid.c21.ca/2025/01/20/building-cost-vs-buying-resale-in-edmonton-which-is-right-for-you?utm_source=chatgpt.com",
 ]
 
 # Optional: online PDF sources (processed with OnlinePDFLoader)
