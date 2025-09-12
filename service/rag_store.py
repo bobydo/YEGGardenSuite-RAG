@@ -9,11 +9,14 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import OllamaEmbeddings, SentenceTransformerEmbeddings
 from langchain.schema import Document
 from playwright.sync_api import sync_playwright   # NEW
+from loguru import logger
+from tqdm import tqdm
 from config import EMBED_MODEL, INDEX_DIR, ALLOWED
 
 def load_pdf_urls(pdf_urls):
     docs = []
-    for url in (pdf_urls or []):
+    logger.info(f"loading {len(pdf_urls)} PDF URLs")
+    for url in tqdm(pdf_urls or [], desc="Loading PDF URLs"):
         try:
             docs.extend(OnlinePDFLoader(url).load())
         except Exception as e:
@@ -22,9 +25,13 @@ def load_pdf_urls(pdf_urls):
 
 def load_local_pdfs(paths):
     docs = []
-    for p in (paths or []):
+    for p in tqdm(paths or [], desc="Loading local PDFs"):
         try:
-            docs.extend(PyPDFLoader(p).load())
+            cur_elements = PyPDFLoader(p).load()
+            docs.extend(cur_elements)
+            logger.info(f"{len(docs)}")
+            logger.info(f"{len(cur_elements)}")
+
         except Exception as e:
             print(f"[warn] Local PDF load failed: {p} -> {e}")
     return docs
@@ -39,6 +46,7 @@ def _is_allowed(url):
 
 def _load_html_basic(urls):
     try:
+        logger.info(f"loading {len(urls)} HTML URLs")
         loader = WebBaseLoader(
             urls,
             header_template={"User-Agent": "Mozilla/5.0"},
@@ -186,6 +194,8 @@ def refresh_store(vs: FAISS, urls: List[str], pdf_urls: Sequence[str] = (), loca
     pdf_local_docs = load_local_pdfs(list(local_pdf_paths) if local_pdf_paths else [])
     all_docs = web_docs + pdf_web_docs + pdf_local_docs
     chunks = split_docs(all_docs)
-    vs.add_documents(chunks)
+    logger.info(f"adding {len(chunks)} chunks to index")
+    for chunk in tqdm(chunks, desc="Adding chunks to index"):
+        vs.add_documents([chunk])
     vs.save_local(str(INDEX_DIR))
     return vs
