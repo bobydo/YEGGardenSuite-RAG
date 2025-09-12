@@ -1,0 +1,7 @@
+run following git commands here:
+
+# to install large file system for git:
+    git lfs install
+
+# fetch model from official repo:
+    git clone https://huggingface.co/Alibaba-NLP/gte-Qwen2-1.5B-instruct

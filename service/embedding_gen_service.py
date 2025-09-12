@@ -6,7 +6,7 @@ from typing import List, Dict, Any
 
 # Add the django_dr1_app path to sys.path to import the embedder
 sys.path.append(os.path.join(os.path.dirname(__file__), 'django_dr1_app', 'db_action'))
-from embeder import QwenInstruct
+from service.embeder import QwenInstruct
 
 app = Flask(__name__)
 
