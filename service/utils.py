@@ -1,5 +1,6 @@
 import re
 import os
+from config import ALLOWED
 PDF_URL_RE = re.compile(r"\.pdf($|[?#])", re.IGNORECASE)
 import re
 import re
@@ -35,6 +36,17 @@ def attach_citations(answer: str, source_documents) -> str:
     if not tail:
         return answer
     return f"{answer}\n\n{tail}"
+
+def is_allowed_websites(url: str) -> bool:
+    try:
+        # If ALLOWED is empty, allow all hosts
+        if not ALLOWED:
+            print("no ALLOWED check")
+            return True
+        host = url.split("//", 1)[-1].split("/", 1)[0].lower()
+        return host in ALLOWED
+    except Exception:
+        return not ALLOWED
 
 def download_pdf(url: str, out_dir: str | None = None, filename: str | None = None, timeout: int = 30) -> str | None:
     r"""

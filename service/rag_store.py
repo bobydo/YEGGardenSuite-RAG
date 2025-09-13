@@ -2,16 +2,22 @@
 # python -m playwright install
 
 from typing import List, Sequence
+import logging
+import time
 from urllib.parse import urlparse
 from langchain_community.document_loaders import WebBaseLoader, OnlinePDFLoader, PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import OllamaEmbeddings, SentenceTransformerEmbeddings
+from langchain_ollama import OllamaEmbeddings
+from langchain_community.embeddings import SentenceTransformerEmbeddings
 from langchain.schema import Document
 from playwright.sync_api import sync_playwright   # NEW
 from loguru import logger
 from tqdm import tqdm
 from config import EMBED_MODEL, INDEX_DIR, ALLOWED
+from service.utils import is_allowed_websites
+
+logger = logging.getLogger(__name__)
 
 def load_pdf_urls(pdf_urls):
     docs = []
@@ -37,12 +43,7 @@ def load_local_pdfs(paths):
     return docs
 
 
-def _is_allowed(url):
-    try:
-        host = url.split("//", 1)[-1].split("/", 1)[0].lower()
-        return host in ALLOWED
-    except Exception:
-        return False
+ 
 
 def _load_html_basic(urls):
     try:
@@ -57,6 +58,10 @@ def _load_html_basic(urls):
 
 def _expand_and_extract_with_playwright(urls):
     docs = []
+    t0 = time.perf_counter()
+    logger.info("playwright: start render: urls=%d", len(urls) if urls else 0)
+    processed = 0
+    skipped = 0
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         ctx = browser.new_context(
@@ -76,9 +81,12 @@ def _expand_and_extract_with_playwright(urls):
         )
 
         page = ctx.new_page()
-        for url in urls:
-            if not _is_allowed(url):
+        for url in (urls or []):
+            if not is_allowed_websites(url):
+                skipped += 1
+                logger.debug("playwright: skip disallowed: %s", url)
                 continue
+            t_url = time.perf_counter()
             try:
                 page.goto(url, wait_until="domcontentloaded", timeout=15000)
 
@@ -118,20 +126,49 @@ def _expand_and_extract_with_playwright(urls):
                     try:
                         link = page.get_by_role("link", name="Create PDF", exact=False).first
                         href = link.get_attribute("href")
-                        if href and href.startswith("http") and _is_allowed(href):
+                        if href and href.startswith("http") and is_allowed_websites(href):
                             pdf_docs = OnlinePDFLoader(href).load()
                             docs.extend(pdf_docs)
+                            logger.info(
+                                "playwright: pdf-fallback ok: url=%s added=%d elapsed_s=%.2f",
+                                url,
+                                len(pdf_docs),
+                                time.perf_counter() - t_url,
+                            )
                             continue
                     except Exception:
                         pass
 
                 if text:
+                    before = len(docs)
                     docs.append(Document(page_content=text, metadata={"source": url}))
+                    added = len(docs) - before
+                    logger.info(
+                        "playwright: page ok: url=%s text_len=%d docs_added=%d elapsed_s=%.2f",
+                        url,
+                        len(text),
+                        added,
+                        time.perf_counter() - t_url,
+                    )
+                processed += 1
             except Exception as e:
                 print(f"[warn] Playwright load failed: {url} -> {e}")
+                try:
+                    elapsed = time.perf_counter() - t_url
+                except Exception:
+                    elapsed = float('nan')
+                logger.warning("playwright: page fail: url=%s err=%s elapsed_s=%.2f", url, e, elapsed)
 
-        ctx.close()
-        browser.close()
+    ctx.close()
+    browser.close()
+    total = time.perf_counter() - t0
+    logger.info(
+        "playwright: done: processed=%d skipped=%d docs=%d elapsed_s=%.2f",
+        processed,
+        skipped,
+        len(docs),
+        total,
+    )
     return docs
 
 def load_pages(urls):

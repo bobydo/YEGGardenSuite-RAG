@@ -5,10 +5,10 @@ import os
 import sys
 import time
 from datetime import datetime
-from logging.handlers import RotatingFileHandler
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from config import URLS, PDF_URLS, LOCAL_PDF_PATHS, INDEX_DIR
+from service.logging_helper import configure_logging
 from service.rag_store import (
     build_or_load_store,
     refresh_store,
@@ -17,26 +17,6 @@ from service.rag_store import (
     load_local_pdfs,
     split_docs,
 )
-
-# -------------------------------
-# Logging setup
-# -------------------------------
-def setup_logging(log_file: str, level: str = "INFO"):
-    logger = logging.getLogger("refresh")
-    logger.setLevel(getattr(logging, level.upper(), logging.INFO))
-
-    fmt = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
-    sh = logging.StreamHandler(sys.stdout)
-    sh.setFormatter(fmt)
-    sh.setLevel(getattr(logging, level.upper(), logging.INFO))
-    logger.addHandler(sh)
-
-    if log_file:
-        rh = RotatingFileHandler(log_file, maxBytes=2_000_000, backupCount=3)
-        rh.setFormatter(fmt)
-        rh.setLevel(getattr(logging, level.upper(), logging.INFO))
-        logger.addHandler(rh)
-    return logger
 
 # -------------------------------
 # Helpers
@@ -52,13 +32,12 @@ def index_size(vs) -> int:
 # -------------------------------
 def main():
     parser = argparse.ArgumentParser(description="Refresh FAISS vector store with latest City of Edmonton pages & PDFs.")
-    parser.add_argument("--log-file", default="refresh.log", help="Path to log file (default: refresh.log)")
-    parser.add_argument("--log-level", default="INFO", help="Logging level (DEBUG, INFO, WARNING, ERROR)")
     parser.add_argument("--dry-run", action="store_true", help="Load and count sources, but do NOT write to FAISS")
     parser.add_argument("--rebuild", action="store_true", help="Delete existing index and rebuild from scratch")
     args = parser.parse_args()
 
-    logger = setup_logging(args.log_file, args.log_level)
+    # Configure logging via helper (logs/refresh.log inferred from script name)
+    logger = configure_logging(level=logging.INFO)
     start_ts = time.time()
     logger.info("=== refresh start ===")
     logger.info(f"rebuild={args.rebuild} dry_run={args.dry_run}")
